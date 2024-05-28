@@ -28,3 +28,7 @@ class ModelHandler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def save_model(self, path):
         pass
+
+    @abc.abstractmethod
+    def compress_image(self, image, compression_ratio):
+        pass
