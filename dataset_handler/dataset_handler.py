@@ -1,13 +1,14 @@
 import abc
 import pandas as pd
 from PIL import Image
+import cv2
+import numpy as np
 
 # TODO: Typing and comments
 
 
 class DatasetHandler(metaclass=abc.ABCMeta):
-    def __init__(self, device):
-        self.device = device
+    def __init__(self):
         self.set_name()
 
     def set_name(self):
@@ -18,15 +19,15 @@ class DatasetHandler(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_image_tensor(self, row, size=224):
+    def get_PIL_image(self, row) -> Image.Image:
         pass
 
-    @abc.abstractmethod
-    def get_PIL_image(self, row, size=224) -> Image.Image:
-        pass
+    def get_cv2_image(self, row):
+        pil_image = self.get_PIL_image(row)
+        return cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR)
 
     @abc.abstractmethod
-    def get_image_type(self, row) -> str:
+    def get_image_class(self, row) -> str:
         pass
 
     def get_samples(self, sample_size):
