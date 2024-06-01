@@ -32,3 +32,6 @@ class DatasetHandler(metaclass=abc.ABCMeta):
 
     def get_samples(self, sample_size):
         return self.dataframe.sample(sample_size)
+
+    def get_all_classes(self):
+        return self.dataframe.category.unique()
