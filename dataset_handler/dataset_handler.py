@@ -9,10 +9,7 @@ import numpy as np
 
 class DatasetHandler(metaclass=abc.ABCMeta):
     def __init__(self):
-        self.set_name()
-
-    def set_name(self):
-        self.name = self.__class__.__name__
+        pass
 
     @abc.abstractmethod
     def create_dataframe(self) -> pd.DataFrame:

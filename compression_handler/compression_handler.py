@@ -6,10 +6,6 @@ import io
 class CompressionHandler(metaclass=abc.ABCMeta):
     def __init__(self) -> None:
         self.parameter_range = range(1, 101)
-        self.set_name()
-
-    def set_name(self):
-        self.name = self.__class__.__name__
 
     def binary_search_size_optimizer(self, image, max_size) -> Image.Image:
         search_space = list(self.parameter_range)
