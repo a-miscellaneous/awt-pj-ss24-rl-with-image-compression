@@ -6,7 +6,7 @@ from PIL import Image
 class JPEG(CompressionHandler):
     def __init__(self):
         super().__init__()
-        self.parameter_range = range(1, 101, 5)
+        self.parameter_range = range(1, 101, 1)
 
     def compress(self, image: Image, parameter) -> bytes:
         buffer = io.BytesIO()
