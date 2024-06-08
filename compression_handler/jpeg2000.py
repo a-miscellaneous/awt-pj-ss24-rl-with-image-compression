@@ -3,13 +3,13 @@ import io
 from PIL import Image
 
 
-class JPEG(CompressionHandler):
+class JPEG2000(CompressionHandler):
     def __init__(self):
         super().__init__()
         self.parameter_range = range(1, 101, 10)
 
     def compress(self, image: Image, parameter) -> bytes:
         buffer = io.BytesIO()
-        image.save(buffer, format="JPEG", quality=parameter)
+        image.save(buffer, format="JPEG2000", quality_layers=[parameter])
         buffer.seek(0)
         return buffer.getvalue()

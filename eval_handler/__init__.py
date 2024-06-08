@@ -3,4 +3,5 @@ def get_all():
     from .psnr import PSNR
     from .mse import MSE
     from .ssim import SSIM
-    return [Pixelwise(), PSNR(), MSE(), SSIM()]
+    from .ms_ssim import MS_SSIM
+    return [Pixelwise(), PSNR(), MSE(), SSIM(), MS_SSIM()]
