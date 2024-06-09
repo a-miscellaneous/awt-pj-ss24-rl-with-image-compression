@@ -1,11 +1,11 @@
 from .compression_handler import CompressionHandler
 import io
 from PIL import Image
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA as skPCA
 import numpy as np
 
 
-class cPCA(CompressionHandler):
+class PCA(CompressionHandler):
     def __init__(self):
         super().__init__()
         self.parameter_range = range(1, 201, 10)
@@ -14,7 +14,7 @@ class cPCA(CompressionHandler):
         img_array = np.array(image)
         size = img_array.shape
         components = min(size[0], size[1], parameter)
-        pca = PCA(n_components=components)
+        pca = skPCA(n_components=components)
 
         def compress_chanell(pca, array):
             pca.fit(array)

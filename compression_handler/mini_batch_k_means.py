@@ -11,7 +11,7 @@ class KMeans(CompressionHandler):
         self.parameter_range = range(1, 101, 10)
 
     def compress(self, image: Image, parameter) -> bytes:
-        clusterer = MiniBatchKMeans(n_clusters=parameter)
+        clusterer = MiniBatchKMeans(n_clusters=parameter, n_init='auto')
         img_array = np.array(image)
         size = img_array.shape
         reshaped = img_array.reshape(size[0] * size[1], size[2])
