@@ -6,6 +6,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.optim as optim
 from torch.distributions import Categorical
 
 # Proximal Policy Optimization
@@ -15,7 +16,8 @@ class PPO(nn.Module):
     def __init__(self, input_dim, output_dims):
         super(PPO, self).__init__()
         self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, 128)
+        self.fc2 = nn.Linear(128, 256)
+        self.fc3 = nn.Linear(256, 128)
         self.policy_layers = nn.ModuleList([
             nn.Linear(128, 101),    # For first action dimension (101 values)
             # For second action dimension (65536 values)
@@ -30,6 +32,7 @@ class PPO(nn.Module):
     def forward(self, x):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
         policy_logits = [layer(x) for layer in self.policy_layers]
         value = self.value_layer(x)
         return policy_logits, value
@@ -62,11 +65,11 @@ class PPO(nn.Module):
 class customModel(CompressionHandler):
     def __init__(self):
         super().__init__()
-        self.parameter_range = range(1, 101, 10)
+        self.parameter_range = range(1, 101, 2)
         self.model = self.load_model()
 
-    def load_model(self, path="model_episode_90_reward_-259631.37507895613.pth"):
-        input_dim = 1000 * 1000 * 3 + 1  # Example image size plus the compression ratio
+    def load_model(self, path="model_episode_410_reward_0.2939134241454985.pth"):
+        input_dim = 15 + 1  # Example image size plus the compression ratio
         # Matching the action space dimensions
         output_dims = [101, 65536, 101, 101, 5]
         agent = PPO(input_dim, output_dims)
@@ -76,30 +79,59 @@ class customModel(CompressionHandler):
 
     def preprocess_image(self, image):
         img = image
+        feature_vector = []
+
+        # Add height and width
         h, w, c = img.shape
-        # Calculate padding amounts
-        pad_height = 1000 - h
-        pad_width = 1000 - w
-        # Ensure padding values are non-negative
-        pad_height_top = pad_height // 2
-        pad_height_bottom = pad_height - pad_height_top
-        pad_width_left = pad_width // 2
-        pad_width_right = pad_width - pad_width_left
+        feature_vector.append(h)
+        feature_vector.append(w)
 
-        # Pad the image
-        img_padded = cv2.copyMakeBorder(img,
-                                        top=pad_height_top, bottom=pad_height_bottom,
-                                        left=pad_width_left, right=pad_width_right,
-                                        borderType=cv2.BORDER_CONSTANT, value=[0, 0, 0])
+        # Add aspect ratio
+        feature_vector.append(h / w)
 
-        return img_padded
+        # Add mean and std of each channel
+        for i in range(c):
+            mean = np.mean(img[:, :, i])
+            std = np.std(img[:, :, i])
+            feature_vector.append(mean)
+            feature_vector.append(std)
+
+        # Add entropy
+        hist, _ = np.histogram(img.flatten(), bins=256, range=[0, 256])
+        hist = hist / np.sum(hist)
+        entropy = -np.sum(hist * np.log2(hist + 1e-6))
+        feature_vector.append(entropy)
+
+        # Add edge density
+        edges = cv2.Canny(img, 100, 200)
+        edge_density = np.mean(edges)
+        feature_vector.append(edge_density)
+
+        # Add brightness
+        brightness = np.mean(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+        feature_vector.append(brightness)
+
+        # Add contrast
+        contrast = np.std(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
+        feature_vector.append(contrast)
+
+        # Add sharpness
+        sharpness = np.mean(cv2.Laplacian(
+            cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), cv2.CV_64F))
+        feature_vector.append(sharpness)
+
+        # Add saturation
+        saturation = np.mean(cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[:, :, 1])
+        feature_vector.append(saturation)
+
+        return feature_vector
 
     def compress(self, image: Image, parameter) -> bytes:
         # Convert PIL image to cv2 image
         cv2_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
         to_compress = cv2_image.copy()
         cv2_image = self.preprocess_image(cv2_image)
-        state = np.append(cv2_image.flatten(), parameter)
+        state = np.append(cv2_image, parameter)
 
         # Ensure state is in the correct format
         state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
