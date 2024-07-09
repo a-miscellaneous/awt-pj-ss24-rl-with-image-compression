@@ -12,6 +12,7 @@ class Kodak(DatasetHandler):
         dataset_path = os.path.dirname(dataset_path)
         dataset_path = os.path.join(dataset_path, "datasets")
         self.dataset_path = os.path.join(dataset_path, "kaggle_Kodak")
+        self.dataset_path = os.path.join(self.dataset_path, "test")
         self.create_dataframe()
 
     def create_dataframe(self) -> pd.DataFrame:

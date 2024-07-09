@@ -122,3 +122,12 @@ def get_all():
             b2018_gdn_128(),                    # 16
             b2018_gdn_192()                     # 17
             ]
+
+def get_jpeg_comp():
+    from .custom_model import customModel
+    from .jpeg import JPEG
+    return [customModel(), JPEG()]
+
+def get_custom_model():
+    from .custom_model import customModel
+    return [customModel()]
