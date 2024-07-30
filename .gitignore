@@ -163,3 +163,5 @@ cython_debug/
 test.ipynb
 model.pth
 /*.pth
+
+/vis
